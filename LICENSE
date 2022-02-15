@@ -23,6 +23,8 @@ SOFTWARE.
 -----
 
 cmark
+derived from cmark (https://github.com/commonmark/cmark)
+with the modification of adding cmark_version.h cmark_export.h config.h
 
 Copyright (c) 2014, John MacFarlane
 

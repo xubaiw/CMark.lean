@@ -19,8 +19,8 @@ def cmarkOTarget (pkgDir : FilePath) (srcName : String) : FileTarget :=
     compileO oFile srcFile #["-I", (pkgDir / cmarkDir).toString] "clang"
 
 def wrapperOTarget (pkgDir : FilePath) : FileTarget :=
-  let oFile := pkgDir / buildDir / cmarkDir / wrapperDir / ⟨ wrapperName ++ ".o" ⟩ 
-  let srcTarget := inputFileTarget <| pkgDir / cmarkDir / wrapperDir / ⟨ wrapperName ++ ".c" ⟩
+  let oFile := pkgDir / buildDir / wrapperDir / ⟨ wrapperName ++ ".o" ⟩ 
+  let srcTarget := inputFileTarget <| pkgDir / wrapperDir / ⟨ wrapperName ++ ".c" ⟩
   fileTargetWithDep oFile srcTarget λ srcFile => do
     compileO oFile srcFile #["-I", (← getLeanIncludeDir).toString, "-I", (pkgDir / cmarkDir).toString] "clang"
 
