@@ -16,13 +16,13 @@ def cmarkOTarget (pkgDir : FilePath) (srcName : String) : FileTarget :=
   let oFile := pkgDir / buildDir / cmarkDir / ⟨ srcName ++ ".o" ⟩ 
   let srcTarget := inputFileTarget <| pkgDir / cmarkDir / ⟨ srcName ++ ".c" ⟩
   fileTargetWithDep oFile srcTarget λ srcFile => do
-    compileO oFile srcFile #["-I", (pkgDir / cmarkDir).toString] "clang"
+    compileO oFile srcFile #["-I", (pkgDir / cmarkDir).toString]
 
 def wrapperOTarget (pkgDir : FilePath) : FileTarget :=
   let oFile := pkgDir / buildDir / wrapperDir / ⟨ wrapperName ++ ".o" ⟩ 
   let srcTarget := inputFileTarget <| pkgDir / wrapperDir / ⟨ wrapperName ++ ".c" ⟩
   fileTargetWithDep oFile srcTarget λ srcFile => do
-    compileO oFile srcFile #["-I", (← getLeanIncludeDir).toString, "-I", (pkgDir / cmarkDir).toString] "clang"
+    compileO oFile srcFile #["-I", (← getLeanIncludeDir).toString, "-I", (pkgDir / cmarkDir).toString]
 
 def cmarkTarget (pkgDir : FilePath) : FileTarget :=
   let libFile := pkgDir / buildDir / cmarkDir / "libleancmark.a"
