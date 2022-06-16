@@ -1,6 +1,8 @@
 import Lake
 open System Lake DSL
 
+package CMark
+
 def cmarkDir : FilePath := "cmark"
 def wrapperDir := "wrapper"
 def srcNames := #[
@@ -12,23 +14,20 @@ def srcNames := #[
 def wrapperName := "wrapper"
 def buildDir := defaultBuildDir
 
-def cmarkOTarget (pkgDir : FilePath) (srcName : String) : FileTarget :=
-  let oFile := pkgDir / buildDir / cmarkDir / ⟨ srcName ++ ".o" ⟩ 
-  let srcTarget := inputFileTarget <| pkgDir / cmarkDir / ⟨ srcName ++ ".c" ⟩
+def cmarkOTarget (srcName : String) : FileTarget :=
+  let oFile := __dir__ / buildDir / cmarkDir / ⟨ srcName ++ ".o" ⟩ 
+  let srcTarget := inputFileTarget <| __dir__ / cmarkDir / ⟨ srcName ++ ".c" ⟩
   fileTargetWithDep oFile srcTarget λ srcFile => do
-    compileO oFile srcFile #["-I", (pkgDir / cmarkDir).toString]
+    compileO oFile srcFile #["-I", (__dir__ / cmarkDir).toString]
 
-def wrapperOTarget (pkgDir : FilePath) : FileTarget :=
-  let oFile := pkgDir / buildDir / wrapperDir / ⟨ wrapperName ++ ".o" ⟩ 
-  let srcTarget := inputFileTarget <| pkgDir / wrapperDir / ⟨ wrapperName ++ ".c" ⟩
+def wrapperOTarget : FileTarget :=
+  let oFile := __dir__ / buildDir / wrapperDir / ⟨ wrapperName ++ ".o" ⟩ 
+  let srcTarget := inputFileTarget <| __dir__ / wrapperDir / ⟨ wrapperName ++ ".c" ⟩
   fileTargetWithDep oFile srcTarget λ srcFile => do
-    compileO oFile srcFile #["-I", (← getLeanIncludeDir).toString, "-I", (pkgDir / cmarkDir).toString]
+    compileO oFile srcFile #["-I", (← getLeanIncludeDir).toString, "-I", (__dir__ / cmarkDir).toString]
 
-def cmarkTarget (pkgDir : FilePath) : FileTarget :=
-  let libFile := pkgDir / buildDir / cmarkDir / "libleancmark.a"
-  staticLibTarget libFile <| srcNames.map (cmarkOTarget pkgDir) ++ #[wrapperOTarget pkgDir]
+def cmarkTarget : FileTarget :=
+  let libFile := __dir__ / buildDir / cmarkDir / "libleancmark.a"
+  staticLibTarget libFile <| srcNames.map (cmarkOTarget) ++ #[wrapperOTarget]
 
-package CMark (pkgDir) (args) {
-  binName := "lean-cmark"
-  moreLibTargets := #[cmarkTarget pkgDir]
-}
+extern_lib cmark := cmarkTarget
