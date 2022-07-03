@@ -30,4 +30,7 @@ def cmarkTarget : FileTarget :=
   let libFile := __dir__ / buildDir / cmarkDir / "libleancmark.a"
   staticLibTarget libFile <| srcNames.map (cmarkOTarget) ++ #[wrapperOTarget]
 
+@[defaultTarget]
+lean_lib CMark
+
 extern_lib cmark := cmarkTarget
