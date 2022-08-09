@@ -14,23 +14,24 @@ def srcNames := #[
 def wrapperName := "wrapper"
 def buildDir := defaultBuildDir
 
-def cmarkOTarget (srcName : String) : FileTarget :=
-  let oFile := __dir__ / buildDir / cmarkDir / ⟨ srcName ++ ".o" ⟩
-  let srcTarget := inputFileTarget <| __dir__ / cmarkDir / ⟨ srcName ++ ".c" ⟩
-  fileTargetWithDep oFile srcTarget λ srcFile => do
-    compileO oFile srcFile #["-I", (__dir__ / cmarkDir).toString, "-fPIC"]
+def cmarkOTarget (pkg : Package) (srcName : String) : IndexBuildM (BuildJob FilePath) := do
+  let oFile := pkg.dir / buildDir / cmarkDir / ⟨ srcName ++ ".o" ⟩
+  let srcTarget ← inputFile <| pkg.dir / cmarkDir / ⟨ srcName ++ ".c" ⟩
+  buildFileAfterDep oFile srcTarget λ srcFile => do
+    let flags := #["-I", (pkg.dir / cmarkDir).toString, "-fPIC"]
+    compileO (srcName ++ "c") oFile srcFile flags
 
-def wrapperOTarget : FileTarget :=
-  let oFile := __dir__ / buildDir / wrapperDir / ⟨ wrapperName ++ ".o" ⟩
-  let srcTarget := inputFileTarget <| __dir__ / wrapperDir / ⟨ wrapperName ++ ".c" ⟩
-  fileTargetWithDep oFile srcTarget λ srcFile => do
-    compileO oFile srcFile #["-I", (← getLeanIncludeDir).toString, "-I", (__dir__ / cmarkDir).toString, "-fPIC"]
-
-def cmarkTarget : FileTarget :=
-  let libFile := __dir__ / buildDir / cmarkDir / "libleancmark.a"
-  staticLibTarget libFile <| srcNames.map (cmarkOTarget) ++ #[wrapperOTarget]
+def wrapperOTarget (pkg : Package) : IndexBuildM (BuildJob FilePath) := do
+  let oFile := pkg.dir / buildDir / wrapperDir / ⟨ wrapperName ++ ".o" ⟩
+  let srcTarget ← inputFile <| pkg.dir / wrapperDir / ⟨ wrapperName ++ ".c" ⟩
+  buildFileAfterDep oFile srcTarget λ srcFile => do
+    let flags := #["-I", (← getLeanIncludeDir).toString, "-I", (pkg.dir / cmarkDir).toString, "-fPIC"]
+    compileO (wrapperName ++ "c") oFile srcFile flags
 
 @[defaultTarget]
 lean_lib CMark
 
-extern_lib cmark := cmarkTarget
+extern_lib cmark (pkg : Package) := do
+  let libFile := pkg.dir / buildDir / cmarkDir / "libleancmark.a"
+  let oTargets := (←srcNames.mapM (cmarkOTarget pkg)) ++ #[←wrapperOTarget pkg]
+  buildStaticLib libFile oTargets
