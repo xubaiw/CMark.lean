@@ -28,7 +28,7 @@ def wrapperOTarget (pkg : Package) : IndexBuildM (BuildJob FilePath) := do
     let flags := #["-I", (← getLeanIncludeDir).toString, "-I", (pkg.dir / cmarkDir).toString, "-fPIC"]
     compileO (wrapperName ++ "c") oFile srcFile flags
 
-@[defaultTarget]
+@[default_target]
 lean_lib CMark
 
 extern_lib cmark (pkg : Package) := do
